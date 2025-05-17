@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useContext, useState } from "react";
 import { AuthContext } from "../_layout";
 import SideMenu from "@/components/SideMenu";
+import WebView from "react-native-webview";
 
 export default function Index() {
   const insets = useSafeAreaInsets();
