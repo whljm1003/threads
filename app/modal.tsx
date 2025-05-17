@@ -1,23 +1,24 @@
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
-import * as Location from "expo-location";
-import * as MediaLibrary from "expo-media-library";
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
-  Alert,
-  FlatList,
-  Image,
-  Linking,
-  Pressable,
-  Modal as RNModal,
-  StyleSheet,
+  View,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  FlatList,
+  Image,
+  StyleSheet,
+  Modal as RNModal,
+  Pressable,
+  Linking,
+  Alert,
+  useColorScheme,
 } from "react-native";
+import { useRouter } from "expo-router";
+import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Location from "expo-location";
+import * as ImagePicker from "expo-image-picker";
+import * as MediaLibrary from "expo-media-library";
 
 interface Thread {
   id: string;
@@ -43,7 +44,7 @@ export function ListFooter({
         />
       </View>
       <View>
-        <Pressable onPress={addThread} style={styles.input}>
+        <Pressable onPress={addThread} style={[styles.input]}>
           <Text style={{ color: canAddThread ? "#999" : "#aaa" }}>
             Add to thread
           </Text>
@@ -54,6 +55,7 @@ export function ListFooter({
 }
 
 export default function Modal() {
+  const colorScheme = useColorScheme();
   const router = useRouter();
   const [threads, setThreads] = useState<Thread[]>([
     { id: Date.now().toString(), text: "", imageUris: [] },
@@ -87,10 +89,6 @@ export default function Modal() {
     (thread) => thread.text.trim().length > 0 || thread.imageUris.length > 0
   );
 
-  const addImageToThread = (id: string, uri: string) => {};
-
-  const addLocationToThread = (id: string, location: [number, number]) => {};
-
   const removeThread = (id: string) => {
     setThreads((prevThreads) =>
       prevThreads.filter((thread) => thread.id !== id)
@@ -112,13 +110,11 @@ export default function Modal() {
       );
       return;
     }
-
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images", "livePhotos", "videos"],
       allowsMultipleSelection: true,
       selectionLimit: 5,
     });
-
     console.log("image result", result);
     if (!result.canceled) {
       setThreads((prevThreads) =>
@@ -151,7 +147,6 @@ export default function Modal() {
       );
       return;
     }
-    // console.log("into takePhoto");
     let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ["images", "livePhotos", "videos"],
       allowsMultipleSelection: true,
@@ -162,6 +157,7 @@ export default function Modal() {
     if (status === "granted" && result.assets?.[0].uri) {
       MediaLibrary.saveToLibraryAsync(result.assets[0].uri);
     }
+
     if (!result.canceled) {
       setThreads((prevThreads) =>
         prevThreads.map((thread) =>
@@ -244,7 +240,16 @@ export default function Modal() {
       </View>
       <View style={styles.contentContainer}>
         <View style={styles.userInfoContainer}>
-          <Text style={styles.username}>zerohch0</Text>
+          <Text
+            style={[
+              styles.username,
+              colorScheme === "dark"
+                ? styles.usernameDark
+                : styles.usernameLight,
+            ]}
+          >
+            zerohch0
+          </Text>
           {index > 0 && (
             <TouchableOpacity
               onPress={() => removeThread(item.id)}
@@ -256,7 +261,10 @@ export default function Modal() {
           )}
         </View>
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            colorScheme === "dark" ? styles.inputDark : styles.inputLight,
+          ]}
           placeholder={"What's new?"}
           placeholderTextColor="#999"
           value={item.text}
@@ -325,14 +333,38 @@ export default function Modal() {
   );
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
+    <View
+      style={[
+        styles.container,
+        { paddingTop: insets.top },
+        colorScheme === "dark" ? styles.containerDark : styles.containerLight,
+      ]}
+    >
+      <View
+        style={[
+          styles.header,
+          colorScheme === "dark" ? styles.headerDark : styles.headerLight,
+        ]}
+      >
         <Pressable onPress={handleCancel} disabled={isPosting}>
-          <Text style={[styles.cancel, isPosting && styles.disabledText]}>
+          <Text
+            style={[
+              styles.cancel,
+              colorScheme === "dark" ? styles.cancelDark : styles.cancelLight,
+              isPosting && styles.disabledText,
+            ]}
+          >
             Cancel
           </Text>
         </Pressable>
-        <Text style={styles.title}>New thread</Text>
+        <Text
+          style={[
+            styles.title,
+            colorScheme === "dark" ? styles.titleDark : styles.titleLight,
+          ]}
+        >
+          New thread
+        </Text>
         <View style={styles.headerRightPlaceholder} />
       </View>
 
@@ -353,8 +385,13 @@ export default function Modal() {
             }}
           />
         }
-        style={styles.list}
-        contentContainerStyle={{ backgroundColor: "#ddd" }}
+        style={[
+          styles.list,
+          colorScheme === "dark" ? styles.listDark : styles.listLight,
+        ]}
+        contentContainerStyle={{
+          backgroundColor: colorScheme === "dark" ? "#101010" : "white",
+        }}
         keyboardShouldPersistTaps="handled"
       />
 
@@ -369,7 +406,13 @@ export default function Modal() {
           onPress={() => setIsDropdownVisible(false)}
         >
           <View
-            style={[styles.dropdownContainer, { bottom: insets.bottom + 30 }]}
+            style={[
+              styles.dropdownContainer,
+              { bottom: insets.bottom + 30 },
+              colorScheme === "dark"
+                ? styles.dropdownContainerDark
+                : styles.dropdownContainerLight,
+            ]}
           >
             {replyOptions.map((option) => (
               <Pressable
@@ -386,6 +429,9 @@ export default function Modal() {
                 <Text
                   style={[
                     styles.dropdownOptionText,
+                    colorScheme === "dark"
+                      ? styles.dropdownOptionTextDark
+                      : styles.dropdownOptionTextLight,
                     option === replyOption && styles.selectedOptionText,
                   ]}
                 >
@@ -397,16 +443,49 @@ export default function Modal() {
         </Pressable>
       </RNModal>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
+      <View
+        style={[
+          styles.footer,
+          { paddingBottom: insets.bottom + 10 },
+          colorScheme === "dark" ? styles.footerDark : styles.footerLight,
+        ]}
+      >
         <Pressable onPress={() => setIsDropdownVisible(true)}>
-          <Text style={styles.footerText}>{replyOption} can reply & quote</Text>
+          <Text
+            style={[
+              styles.footerText,
+              colorScheme === "dark"
+                ? styles.footerTextDark
+                : styles.footerTextLight,
+            ]}
+          >
+            {replyOption} can reply & quote
+          </Text>
         </Pressable>
         <Pressable
-          style={[styles.postButton, !canPost && styles.postButtonDisabled]}
+          style={[
+            styles.postButton,
+            colorScheme === "dark"
+              ? styles.postButtonDark
+              : styles.postButtonLight,
+            !canPost &&
+              (colorScheme === "dark"
+                ? styles.postButtonDisabledDark
+                : styles.postButtonDisabledLight),
+          ]}
           disabled={!canPost}
           onPress={handlePost}
         >
-          <Text style={styles.postButtonText}>Post</Text>
+          <Text
+            style={[
+              styles.postButtonText,
+              colorScheme === "dark"
+                ? styles.postButtonTextDark
+                : styles.postButtonTextLight,
+            ]}
+          >
+            Post
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -418,32 +497,58 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
+  containerLight: {
+    backgroundColor: "#fff",
+  },
+  containerDark: {
+    backgroundColor: "#101010",
+  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
+  },
+  headerLight: {
     backgroundColor: "#fff",
+  },
+  headerDark: {
+    backgroundColor: "#101010",
   },
   headerRightPlaceholder: {
     width: 60,
   },
   cancel: {
-    color: "#000",
     fontSize: 16,
+  },
+  cancelLight: {
+    color: "#000",
+  },
+  cancelDark: {
+    color: "#fff",
   },
   disabledText: {
     color: "#ccc",
   },
   title: {
-    color: "#000",
     fontSize: 16,
     fontWeight: "600",
   },
+  titleLight: {
+    color: "#000",
+  },
+  titleDark: {
+    color: "#fff",
+  },
   list: {
     flex: 1,
-    backgroundColor: "#eee",
+  },
+  listLight: {
+    backgroundColor: "white",
+  },
+  listDark: {
+    backgroundColor: "#101010",
   },
   threadContainer: {
     flexDirection: "row",
@@ -486,15 +591,25 @@ const styles = StyleSheet.create({
   username: {
     fontWeight: "600",
     fontSize: 15,
+  },
+  usernameLight: {
     color: "#000",
+  },
+  usernameDark: {
+    color: "#fff",
   },
   input: {
     fontSize: 15,
-    color: "#000",
     paddingTop: 4,
     paddingBottom: 8,
     minHeight: 24,
     lineHeight: 20,
+  },
+  inputLight: {
+    color: "#000",
+  },
+  inputDark: {
+    color: "#fff",
   },
   actionButtons: {
     flexDirection: "row",
@@ -534,29 +649,52 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingTop: 10,
-    backgroundColor: "#fff",
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
   },
+  footerLight: {
+    backgroundColor: "white",
+  },
+  footerDark: {
+    backgroundColor: "#101010",
+  },
   footerText: {
-    color: "#8e8e93",
     fontSize: 14,
+  },
+  footerTextLight: {
+    color: "#8e8e93",
+  },
+  footerTextDark: {
+    color: "#555",
   },
   postButton: {
     paddingVertical: 8,
     paddingHorizontal: 18,
-    backgroundColor: "#000",
     borderRadius: 18,
   },
-  postButtonDisabled: {
+  postButtonLight: {
+    backgroundColor: "black",
+  },
+  postButtonDark: {
+    backgroundColor: "white",
+  },
+  postButtonDisabledLight: {
     backgroundColor: "#ccc",
   },
+  postButtonDisabledDark: {
+    backgroundColor: "#555",
+  },
   postButtonText: {
-    color: "#fff",
     fontSize: 15,
     fontWeight: "600",
+  },
+  postButtonTextLight: {
+    color: "white",
+  },
+  postButtonTextDark: {
+    color: "black",
   },
   modalOverlay: {
     flex: 1,
@@ -565,10 +703,15 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     width: 200,
-    backgroundColor: "#fff",
     borderRadius: 10,
     marginHorizontal: 10,
     overflow: "hidden",
+  },
+  dropdownContainerLight: {
+    backgroundColor: "white",
+  },
+  dropdownContainerDark: {
+    backgroundColor: "#101010",
   },
   dropdownOption: {
     paddingVertical: 15,
@@ -579,7 +722,12 @@ const styles = StyleSheet.create({
   selectedOption: {},
   dropdownOptionText: {
     fontSize: 16,
+  },
+  dropdownOptionTextLight: {
     color: "#000",
+  },
+  dropdownOptionTextDark: {
+    color: "#fff",
   },
   selectedOptionText: {
     fontWeight: "600",
