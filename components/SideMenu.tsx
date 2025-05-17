@@ -1,3 +1,4 @@
+import { AuthContext } from "@/app/_layout";
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur"; // For background blur effect
 import React, { useContext } from "react";
@@ -9,7 +10,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { AuthContext } from "../_layout";
 
 interface SideMenuProps {
   isVisible: boolean;

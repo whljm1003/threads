@@ -1,5 +1,5 @@
 import NotFound from "@/app/+not-found.tsx";
-import SideMenu from "@/app/components/SideMenu";
+import SideMenu from "@/components/SideMenu";
 import { Ionicons } from "@expo/vector-icons";
 import { usePathname, useRouter } from "expo-router";
 import { useContext, useState } from "react";
