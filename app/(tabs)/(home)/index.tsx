@@ -39,15 +39,15 @@ export default function Index() {
       <Post
         item={{
           id: "1",
-          username: "zerocho",
-          displayName: "Zerocho",
-          content: "My website is ZeroCho.com",
+          username: "whljm1003",
+          displayName: "whljm1003",
+          content: "My website is whljm1003.com",
           timeAgo: "1 hour ago",
           likes: 10,
           comments: 5,
           reposts: 2,
-          link: "https://www.zerocho.com",
-          linkThumbnail: "https://www.zerocho.com/favicon.png",
+          link: "https://www.whljm1003.com",
+          linkThumbnail: "https://www.whljm1003.com/favicon.png",
           isVerified: true,
           avatar: "https://randomuser.me/api/portraits/men/1.jpg",
         }}
@@ -55,8 +55,8 @@ export default function Index() {
       <Post
         item={{
           id: "2",
-          username: "zerocho",
-          displayName: "Zerocho",
+          username: "whljm1003",
+          displayName: "whljm1003",
           content: "Hello, world!",
           timeAgo: "1 hour ago",
           likes: 10,

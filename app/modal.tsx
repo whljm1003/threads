@@ -248,7 +248,7 @@ export default function Modal() {
                 : styles.usernameLight,
             ]}
           >
-            zerohch0
+            whljm1003
           </Text>
           {index > 0 && (
             <TouchableOpacity

@@ -18,7 +18,7 @@ declare global {
   }
 }
 
-let zerocho: User;
+let whljm1003: User;
 
 if (__DEV__) {
   if (window.server) {
@@ -72,7 +72,7 @@ if (__DEV__) {
       }),
     },
     seeds(server) {
-      zerocho = server.create("user", {
+      whljm1003 = server.create("user", {
         id: "whljm1003",
         name: "jungmin",
         description: "programmer",
@@ -115,7 +115,7 @@ if (__DEV__) {
       this.post("/login", (schema, request) => {
         const { username, password } = JSON.parse(request.requestBody);
 
-        if (username === "zerocho" && password === "1234") {
+        if (username === "whljm1003" && password === "1234") {
           return {
             accessToken: "access-token",
             refreshToken: "refresh-token",
