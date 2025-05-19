@@ -13,7 +13,7 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { AuthContext, type User } from "@/app/_layout";
+import { AuthContext, User } from "@/app/_layout";
 
 interface EditProfileModalProps {
   visible: boolean;
