@@ -1,16 +1,17 @@
 import "expo-router/entry";
+
 import {
   belongsTo,
   createServer,
-  Factory,
   hasMany,
   Model,
   Response,
   RestSerializer,
   Server,
+  Factory,
 } from "miragejs";
-import { User } from "./app/_layout";
 import { faker } from "@faker-js/faker";
+import { type User } from "./app/_layout";
 
 declare global {
   interface Window {
@@ -18,7 +19,7 @@ declare global {
   }
 }
 
-let whljm1003: User;
+let whljm1003: any;
 
 if (__DEV__) {
   if (window.server) {
@@ -32,6 +33,9 @@ if (__DEV__) {
         activities: hasMany("activity"),
       }),
       post: Model.extend({
+        user: belongsTo("user"),
+      }),
+      activity: Model.extend({
         user: belongsTo("user"),
       }),
     },
@@ -60,13 +64,10 @@ if (__DEV__) {
         id: () => faker.string.numeric(6),
         content: () => faker.lorem.paragraph(),
         imageUrls: () =>
-          Array.from(
-            {
-              length: Math.floor(Math.random() * 3),
-            },
-            () => faker.image.urlLoremFlickr()
+          Array.from({ length: Math.floor(Math.random() * 3) }, () =>
+            faker.image.urlLoremFlickr({ category: "nature" })
           ),
-        like: () => Math.floor(Math.random() * 100),
+        likes: () => Math.floor(Math.random() * 100),
         comments: () => Math.floor(Math.random() * 100),
         reposts: () => Math.floor(Math.random() * 100),
       }),
@@ -74,8 +75,8 @@ if (__DEV__) {
     seeds(server) {
       whljm1003 = server.create("user", {
         id: "whljm1003",
-        name: "jungmin",
-        description: "programmer",
+        name: "whljm1003",
+        description: "🐢 lover, programmer, youtuber",
         profileImageUrl: "https://avatars.githubusercontent.com/u/885857?v=4",
       });
       const users = server.createList("user", 10);
@@ -84,9 +85,12 @@ if (__DEV__) {
           user,
         });
       });
+      server.createList("post", 50, {
+        user: whljm1003,
+      });
     },
     routes() {
-      this.post("/post", (schema, request) => {
+      this.post("/posts", (schema, request) => {
         const { posts } = JSON.parse(request.requestBody);
         posts.forEach((post: any) => {
           schema.create("post", {
@@ -96,20 +100,45 @@ if (__DEV__) {
             user: schema.find("user", "whljm1003"),
           });
         });
-        return new Response(200, {}, { posts });
+        return posts;
       });
 
       this.get("/posts", (schema, request) => {
-        console.log("user.all", schema.all("user").models);
-        const cursor = parseInt((request.queryParams.cursor as string) || "0");
-        const posts = schema.all("post").models.slice(cursor, cursor + 10);
-        return new Response(200, {}, { posts });
+        console.log("request", request.queryParams);
+        let posts = schema.all("post");
+        if (request.queryParams.type === "following") {
+          posts = posts.filter((post) => post.user?.id === whljm1003?.id);
+        }
+        let targetIndex = -1;
+        if (request.queryParams.cursor) {
+          targetIndex = posts.models.findIndex(
+            (v) => v.id === request.queryParams.cursor
+          );
+        }
+        return posts.slice(targetIndex + 1, targetIndex + 11);
       });
 
       this.get("/posts/:id", (schema, request) => {
         const post = schema.find("post", request.params.id);
-        const comments = schema.all("post").models.slice(0, 10);
-        return new Response(200, {}, { post, comments });
+        const comments = schema.all("post").slice(0, 10);
+        return { post, comments };
+      });
+
+      this.get("/users/:id/:type", (schema, request) => {
+        console.log("request", request.queryParams);
+        let posts = schema.all("post");
+        if (request.params.type === "threads") {
+          posts = posts.filter((post) => post.user?.id === request.params.id);
+        } else if (request.params.type === "reposts") {
+          posts = posts.filter((post) => post.user?.id !== request.params.id);
+        }
+        let targetIndex = -1;
+        if (request.queryParams.cursor) {
+          targetIndex = posts.models.findIndex(
+            (v) => v.id === request.queryParams.cursor
+          );
+        }
+        return posts.slice(targetIndex + 1, targetIndex + 11);
       });
 
       this.post("/login", (schema, request) => {
@@ -121,8 +150,8 @@ if (__DEV__) {
             refreshToken: "refresh-token",
             user: {
               id: "whljm1003",
-              name: "jungmin",
-              description: "programmer",
+              name: "whljm1003",
+              description: "🐢 lover, programmer, youtuber",
               profileImageUrl:
                 "https://avatars.githubusercontent.com/u/885857?v=4",
             },
