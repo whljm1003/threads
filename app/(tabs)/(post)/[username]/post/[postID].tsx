@@ -11,8 +11,8 @@ import Post, { Post as PostType } from "@/components/Post";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import SideMenu from "@/components/SideMenu";
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useState, useEffect } from "react";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { FlashList } from "@shopify/flash-list";
 
 export default function PostScreen() {
@@ -23,21 +23,28 @@ export default function PostScreen() {
   const { username, postID } = useLocalSearchParams();
   const [post, setPost] = useState<PostType | null>(null);
   const [comments, setComments] = useState<PostType[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  console.log("postID", postID);
 
   useEffect(() => {
-    fetch(`/post/${postID}`)
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        setPost(data.post);
-      });
-    fetch(`/posts/${postID}/comments`)
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        setComments(data.posts);
-      });
-  }, []);
+    setIsLoading(true);
+    const fetchData = async () => {
+      try {
+        const [postData, commentsData] = await Promise.all([
+          fetch(`/posts/${postID}`).then((res) => res.json()),
+          fetch(`/posts/${postID}/comments`).then((res) => res.json()),
+        ]);
+
+        setPost(postData.post);
+        setComments(commentsData.posts);
+        setIsLoading(false);
+      } catch (error) {
+        console.log("error", error);
+      }
+    };
+    fetchData();
+  }, [postID]);
 
   return (
     <View
@@ -47,67 +54,74 @@ export default function PostScreen() {
         colorScheme === "dark" ? styles.containerDark : styles.containerLight,
       ]}
     >
-      <View
-        style={[
-          styles.header,
-          colorScheme === "dark" ? styles.headerDark : styles.headerLight,
-        ]}
-      >
-        {router.canGoBack() ? (
-          <Pressable
-            style={styles.menuButton}
-            onPress={() => {
-              router.back();
-            }}
+      {isLoading ? (
+        <Text>로딩중...</Text>
+      ) : (
+        <React.Fragment>
+          <View
+            style={[
+              styles.header,
+              colorScheme === "dark" ? styles.headerDark : styles.headerLight,
+            ]}
           >
-            <Ionicons
-              name="arrow-back"
-              size={24}
-              color={colorScheme === "dark" ? "gray" : "black"}
+            {router.canGoBack() ? (
+              <Pressable
+                style={styles.menuButton}
+                onPress={() => {
+                  router.back();
+                }}
+              >
+                <Ionicons
+                  name="arrow-back"
+                  size={24}
+                  color={colorScheme === "dark" ? "gray" : "black"}
+                />
+              </Pressable>
+            ) : (
+              <Pressable
+                style={styles.menuButton}
+                onPress={() => {
+                  setIsSideMenuOpen(true);
+                }}
+              >
+                <Ionicons
+                  name="menu"
+                  size={24}
+                  color={colorScheme === "dark" ? "gray" : "black"}
+                />
+              </Pressable>
+            )}
+            <Image
+              source={require("@/assets/images/react-logo.png")}
+              style={styles.logo}
             />
-          </Pressable>
-        ) : (
-          <Pressable
-            style={styles.menuButton}
-            onPress={() => {
-              setIsSideMenuOpen(true);
-            }}
-          >
-            <Ionicons
-              name="menu"
-              size={24}
-              color={colorScheme === "dark" ? "gray" : "black"}
+            <SideMenu
+              isVisible={isSideMenuOpen}
+              onClose={() => setIsSideMenuOpen(false)}
             />
-          </Pressable>
-        )}
-        <Image
-          source={require("@/assets/images/react-logo.png")}
-          style={styles.logo}
-        />
-        <SideMenu
-          isVisible={isSideMenuOpen}
-          onClose={() => setIsSideMenuOpen(false)}
-        />
-      </View>
-      {post && (
-        <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
-          <Post item={post} />
-          <View style={styles.repliesHeader}>
-            <Text
-              style={
-                colorScheme === "dark"
-                  ? styles.repliesHeaderDark
-                  : styles.repliesHeaderLight
-              }
-            >
-              Replies
-            </Text>
           </View>
-          <FlashList
-            data={comments}
-            renderItem={({ item }) => <Post item={item} />}
-          ></FlashList>
-        </ScrollView>
+          {post && (
+            <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
+              <Post item={post} />
+              <View style={styles.repliesHeader}>
+                <Text
+                  style={
+                    colorScheme === "dark"
+                      ? styles.repliesHeaderDark
+                      : styles.repliesHeaderLight
+                  }
+                >
+                  Replies
+                </Text>
+              </View>
+              <FlashList
+                data={comments}
+                renderItem={({ item }) => <Post item={item} />}
+                estimatedItemSize={200}
+              />
+            </ScrollView>
+          )}
+        </React.Fragment>
       )}
     </View>
   );

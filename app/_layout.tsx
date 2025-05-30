@@ -7,6 +7,7 @@ import { Alert, View, StyleSheet, Image, Animated } from "react-native";
 import { Asset } from "expo-asset";
 import Constants from "expo-constants";
 import * as SplashScreen from "expo-splash-screen";
+import Toast, { BaseToast } from "react-native-toast-message";
 
 // 스플래시 스크린 자동으로 닫기 X
 // Instruct SplashScreen not to hide yet, we want to do this manually
@@ -187,6 +188,42 @@ function AnimatedSplashScreen({
 }
 
 export default function RootLayout() {
+  const toastConfig = {
+    customToast: (props: any) => (
+      <BaseToast
+        style={{
+          backgroundColor: "white",
+          borderRadius: 20,
+          height: 40,
+          borderLeftWidth: 0,
+          justifyContent: "center",
+          // iOS용 shadow
+          shadowColor: "#000",
+          shadowOffset: {
+            width: 0,
+            height: 2,
+          },
+          shadowOpacity: 0.25,
+          shadowRadius: 3.84,
+          // Android용 shadow
+          elevation: 5,
+        }}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          alignItems: "center",
+          height: 40,
+        }}
+        text1Style={{
+          color: "black",
+          fontSize: 14,
+          fontWeight: "500",
+        }}
+        text1={props.text1}
+        onPress={props.onPress}
+      />
+    ),
+  };
+
   return (
     <AnimatedAppLoader image={require("../assets/images/react-logo.png")}>
       <StatusBar style="auto" animated hidden={false} />
@@ -194,6 +231,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="modal" options={{ presentation: "modal" }} />
       </Stack>
+      <Toast config={toastConfig} />
     </AnimatedAppLoader>
   );
 }

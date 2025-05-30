@@ -13,12 +13,13 @@ import {
   Alert,
   useColorScheme,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
+import Toast from "react-native-toast-message";
 
 interface Thread {
   id: string;
@@ -54,7 +55,7 @@ export function ListFooter({
   );
 }
 
-export default function Modal() {
+export default function AddModal() {
   const colorScheme = useColorScheme();
   const router = useRouter();
   const [threads, setThreads] = useState<Thread[]>([
@@ -64,6 +65,7 @@ export default function Modal() {
   const [replyOption, setReplyOption] = useState("Anyone");
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
+  const { username } = useLocalSearchParams();
 
   const replyOptions = ["Anyone", "Profiles you follow", "Mentioned only"];
 
@@ -78,7 +80,7 @@ export default function Modal() {
     threads.forEach((thread, index) => {
       formData.append(`posts[${index}][id]`, thread.id);
       formData.append(`posts[${index}][content]`, thread.text);
-      formData.append(`posts[${index}][userId]`, "zerohch0");
+      formData.append(`posts[${index}][userId]`, "whljm1003");
       formData.append(
         `posts[${index}][location]`,
         JSON.stringify(thread.location)
@@ -92,6 +94,14 @@ export default function Modal() {
       });
     });
 
+    Toast.show({
+      text1: "Posting...",
+      type: "customToast",
+      visibilityTime: 5000,
+      position: "bottom",
+      bottomOffset: 40,
+    });
+
     fetch("/posts", {
       method: "POST",
       headers: {
@@ -102,9 +112,30 @@ export default function Modal() {
       .then((res) => res.json())
       .then((data) => {
         console.log("post result", data);
+        Toast.hide();
+        Toast.show({
+          text1: "Post posted",
+          type: "customToast",
+          visibilityTime: 5000,
+          position: "bottom",
+          bottomOffset: 40,
+          onPress: () => {
+            console.log("post pressed", data);
+            router.replace(`/@${data[0].userId}/post/${data[0].id}`);
+            Toast.hide();
+          },
+        });
       })
       .catch((err) => {
         console.error("post error", err);
+        Toast.hide();
+        Toast.show({
+          text1: "Post failed",
+          type: "customToast",
+          visibilityTime: 5000,
+          position: "bottom",
+          bottomOffset: 40,
+        });
       });
   };
 
@@ -156,7 +187,7 @@ export default function Modal() {
           thread.id === id
             ? {
                 ...thread,
-                imageUris: thread.imageUrls.concat(
+                imageUrls: thread.imageUrls.concat(
                   result.assets?.map((asset) => asset.uri) ?? []
                 ),
               }
@@ -198,7 +229,7 @@ export default function Modal() {
           thread.id === id
             ? {
                 ...thread,
-                imageUris: thread.imageUrls.concat(
+                imageUrls: thread.imageUrls.concat(
                   result.assets?.map((asset) => asset.uri) ?? []
                 ),
               }
@@ -214,7 +245,7 @@ export default function Modal() {
         thread.id === id
           ? {
               ...thread,
-              imageUris: thread.imageUrls.filter((uri) => uri !== uriToRemove),
+              imageUrls: thread.imageUrls.filter((uri) => uri !== uriToRemove),
             }
           : thread
       )
@@ -283,6 +314,7 @@ export default function Modal() {
             ]}
           >
             whljm1003
+            {/* {username} */}
           </Text>
           {index > 0 && (
             <TouchableOpacity

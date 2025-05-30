@@ -117,10 +117,10 @@ if (__DEV__) {
             }
           }
         });
-        console.log("posts", posts);
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+        await new Promise((resolve) => setTimeout(resolve, 1500));
         posts.forEach((post: any) => {
           schema.create("post", {
+            id: post.id,
             content: post.content,
             imageUrls: post.imageUrls,
             location: post.location,

@@ -67,6 +67,7 @@ export default function Post({ item }: { item: Post }) {
       isLiked: false, // 예시: 기본값 false
       shares: 0, // 예시: 기본값 0
     };
+    console.log("router", `/@${post.user.id}/post/${post.id}`);
     router.push(`/@${post.user.id}/post/${post.id}`);
   };
 

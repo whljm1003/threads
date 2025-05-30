@@ -136,7 +136,7 @@ export default function TabLayout() {
               console.log("tabPress");
               e.preventDefault();
               if (isLoggedIn) {
-                router.navigate("/modal");
+                router.navigate("/addModal");
               } else {
                 openLoginModal();
               }
